@@ -1,6 +1,8 @@
 const db = require("../models");
 
 module.exports = function(app) {
+
+  // Returns all workout documents sorted in an array
   app.get("/api/workouts", (req, res) => {
     db.Workout.find({})
       .sort([['day', 1]])
@@ -12,29 +14,33 @@ module.exports = function(app) {
       });
   });
 
+  // Pushes a new exercise object to the most recent (by ID) exercise array
   app.put("/api/workouts/:id", (req, res) => {
-    console.log("PUT REQUEST /api/workouts/:id");
-    console.log("Params: " + req.params.id);
-    if (req.params.id === undefined) {
-      console.log("req.params.id === undefined");
-    } else {
-      console.log(req.params.id);
-      res.json("test");
-    }
+    db.Workout.updateOne({
+      _id: req.params.id
+    },{ 
+      $push: { exercises: req.body }
+    },)
+    .then(dbWorkout => {
+      res.json(dbWorkout);
+    })
+    .catch(err => {
+      res.json(err);
+    });
   });
 
+  // Returns a new, empty workout document which will be updated by PUT requests
   app.post("/api/workouts/", (req, res) => {
-    console.log("POST REQ BODY:")
-    console.log(req.body);
-    // db.Workout.create({})
-    // .then(dbWorkout => {
-    //   res.json(dbWorkout);
-    // })
-    // .catch(err => {
-    //   res.json(err);
-    // });
+    db.Workout.create({})
+    .then(dbWorkout => {
+      res.json(dbWorkout);
+    })
+    .catch(err => {
+      res.json(err);
+    });
   });
 
+  // Returns all workout documents
   app.get("/api/workouts/range", (req, res) => {
     db.Workout.find({})
     .then(dbWorkout => {
